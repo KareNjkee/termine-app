@@ -21,12 +21,6 @@ const busy = ref(false)
 const error = ref('')
 const titleInput = ref(null)
 
-const quickDates = computed(() => [
-  { label: 'Завтра', iso: addDays(props.today, 1) },
-  { label: 'Через тиждень', iso: addDays(props.today, 7) },
-  { label: 'Через 2 тижні', iso: addDays(props.today, 14) },
-])
-
 const subjectChips = computed(() => props.subjects.slice(0, 8))
 
 const reminders = computed(() => {
@@ -43,7 +37,7 @@ function toggleSubject(name) {
 async function handleSubmit() {
   error.value = ''
   if (!title.value.trim()) {
-    error.value = 'Напиши, що треба зробити.'
+    error.value = 'Вкажи назву терміну.'
     titleInput.value?.focus()
     return
   }
@@ -115,7 +109,7 @@ onBeforeUnmount(() => {
 
       <div class="section fields">
         <label class="field">
-          <span class="field-label">Що зробити</span>
+          <span class="field-label">Назва терміну</span>
           <input
             ref="titleInput"
             v-model="title"
@@ -126,7 +120,7 @@ onBeforeUnmount(() => {
           />
         </label>
         <label class="field">
-          <span class="field-label">Предмет</span>
+          <span class="field-label">Детальніше</span>
           <input v-model="subject" maxlength="100" placeholder="Необов’язково" autocomplete="off" />
         </label>
       </div>
@@ -150,19 +144,6 @@ onBeforeUnmount(() => {
           <span class="field-label">Дата</span>
           <input v-model="dueDate" type="date" required />
         </label>
-      </div>
-
-      <div class="chips" aria-label="Швидкий вибір дати">
-        <button
-          v-for="quick in quickDates"
-          :key="quick.label"
-          type="button"
-          class="chip"
-          :class="{ active: dueDate === quick.iso }"
-          @click="dueDate = quick.iso"
-        >
-          {{ quick.label }}
-        </button>
       </div>
 
       <p v-if="dueDate" class="hint">{{ formatLong(dueDate) }}. {{ reminders }}</p>
