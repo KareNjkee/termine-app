@@ -61,6 +61,11 @@ export function formatLong(iso) {
   return `${name[0].toUpperCase()}${name.slice(1)}, ${day} ${MONTHS_GENITIVE[month]}`
 }
 
+/** '23:59:00' або '23:59' → '23:59'; порожньо, якщо часу немає */
+export function formatTime(time) {
+  return time ? time.slice(0, 5) : ''
+}
+
 /** "23 жовтня" */
 export function formatDayMonth(iso) {
   const { month, day } = parseISO(iso)

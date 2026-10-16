@@ -26,8 +26,16 @@ const addLabel = computed(() =>
   view.value === 'calendar' ? `Додати на ${formatDayMonth(selectedDate.value)}` : 'Додати термін',
 )
 
+// Терміни без часу — у кінці свого дня
+const timeKey = (time) => time ?? '99:99'
+
 function sortDeadlines() {
-  deadlines.value.sort((a, b) => a.due_date.localeCompare(b.due_date) || a.id - b.id)
+  deadlines.value.sort(
+    (a, b) =>
+      a.due_date.localeCompare(b.due_date) ||
+      timeKey(a.due_time).localeCompare(timeKey(b.due_time)) ||
+      a.id - b.id,
+  )
 }
 
 function showToast(text) {

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import DeadlineRow from './DeadlineRow.vue'
-import { countdown, daysBetween, formatLong } from '../lib/dates.js'
+import { countdown, daysBetween, formatLong, formatTime } from '../lib/dates.js'
 import { subjectHue } from '../lib/subjects.js'
 
 const props = defineProps({
@@ -58,7 +58,9 @@ const groups = computed(() =>
           <span class="subject-dot" :style="{ '--hue': subjectHue(next.item.subject) }" />
           {{ next.item.subject }}
         </span>
-        <span class="hero-date">{{ formatLong(next.item.due_date) }}</span>
+        <span class="hero-date tabular">
+          {{ formatLong(next.item.due_date) }}<template v-if="next.item.due_time">, {{ formatTime(next.item.due_time) }}</template>
+        </span>
       </span>
     </button>
 

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { addDays, daysBetween, formatLong, reminderText } from '../lib/dates.js'
+import { addDays, daysBetween, formatLong, formatTime, reminderText } from '../lib/dates.js'
 import { subjectHue } from '../lib/subjects.js'
 
 const props = defineProps({
@@ -17,6 +17,7 @@ const isEdit = computed(() => props.item !== null)
 const title = ref(props.item?.title ?? '')
 const subject = ref(props.item?.subject ?? '')
 const dueDate = ref(props.item?.due_date ?? props.presetDate ?? addDays(props.today, 7))
+const dueTime = ref(formatTime(props.item?.due_time)) // '' = без часу
 const busy = ref(false)
 const error = ref('')
 const titleInput = ref(null)
@@ -52,6 +53,7 @@ async function handleSubmit() {
       title: title.value.trim(),
       subject: subject.value.trim() || null,
       due_date: dueDate.value,
+      due_time: dueTime.value || null,
     })
   } catch (e) {
     error.value = e.message
@@ -144,9 +146,26 @@ onBeforeUnmount(() => {
           <span class="field-label">Дата</span>
           <input v-model="dueDate" type="date" required />
         </label>
+        <div class="field time-field">
+          <label class="time-input">
+            <span class="field-label">Час (необов’язково)</span>
+            <input v-model="dueTime" type="time" />
+          </label>
+          <button
+            v-if="dueTime"
+            type="button"
+            class="clear-time"
+            aria-label="Прибрати час"
+            @click="dueTime = ''"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg>
+          </button>
+        </div>
       </div>
 
-      <p v-if="dueDate" class="hint">{{ formatLong(dueDate) }}. {{ reminders }}</p>
+      <p v-if="dueDate" class="hint">
+        {{ formatLong(dueDate) }}<template v-if="dueTime">, {{ dueTime }}</template>. {{ reminders }}
+      </p>
       <p v-if="error" class="error" role="alert">{{ error }}</p>
 
       <button class="primary-button" type="submit" :disabled="busy">
@@ -242,6 +261,40 @@ onBeforeUnmount(() => {
 
 .field:focus-within {
   box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.time-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-input {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clear-time {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--fill);
+  color: var(--hint);
+}
+
+.clear-time svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
 }
 
 .chips {

@@ -2,9 +2,9 @@ import { addDays, todayISO } from './dates.js'
 
 // Тестові дані для демо-режиму (?demo). Дати рахуються від сьогодні.
 const SAMPLE = [
-  { title: 'Präsentation Zeitschriftenartikel', subject: 'IT-Recht', offset: 2 },
+  { title: 'Präsentation Zeitschriftenartikel', subject: 'IT-Recht', offset: 2, time: '10:00' },
   { title: 'Klausuranmeldung im Portal', subject: null, offset: 1 },
-  { title: 'Hausarbeit abgeben', subject: 'Marketing', offset: 6 },
+  { title: 'Hausarbeit abgeben', subject: 'Marketing', offset: 6, time: '23:59' },
   { title: 'Laborbericht', subject: 'IT-Security', offset: 13 },
   { title: 'Gruppenabgabe Geschäftsmodell', subject: 'Digital Business', offset: 24 },
   { title: 'Übungsblatt 3', subject: 'SCOM', offset: -1 },
@@ -21,6 +21,7 @@ export function createDemoApi() {
     title: s.title,
     subject: s.subject,
     due_date: addDays(today, s.offset),
+    due_time: s.time ?? null,
     done: Boolean(s.done),
   }))
 
@@ -31,7 +32,7 @@ export function createDemoApi() {
     },
     async create(fields) {
       await wait()
-      const row = { id: nextId++, done: false, subject: null, ...fields }
+      const row = { id: nextId++, done: false, subject: null, due_time: null, ...fields }
       rows.push(row)
       return { ...row }
     },

@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { countdown, daysBetween, formatShort } from '../lib/dates.js'
+import { countdown, daysBetween, formatShort, formatTime } from '../lib/dates.js'
 import { subjectHue } from '../lib/subjects.js'
 
 const props = defineProps({
@@ -12,6 +12,13 @@ const emit = defineEmits(['open', 'toggle'])
 
 const info = computed(() => countdown(daysBetween(props.today, props.item.due_date)))
 const hue = computed(() => subjectHue(props.item.subject))
+
+// "пт, 23 жовтня, 23:59" у списку; у календарі (дата вже видна) — тільки "23:59"
+const when = computed(() => {
+  const time = formatTime(props.item.due_time)
+  if (!props.showDate) return time
+  return time ? `${formatShort(props.item.due_date)}, ${time}` : formatShort(props.item.due_date)
+})
 </script>
 
 <template>
@@ -23,11 +30,11 @@ const hue = computed(() => subjectHue(props.item.subject))
       </span>
       <span class="body">
         <span class="title">{{ item.title }}</span>
-        <span v-if="item.subject || showDate" class="meta">
+        <span v-if="item.subject || when" class="meta">
           <span v-if="item.subject" class="subject">
             <span class="subject-dot" :style="{ '--hue': hue }" />{{ item.subject }}
           </span>
-          <span v-if="showDate">{{ formatShort(item.due_date) }}</span>
+          <span v-if="when" class="tabular">{{ when }}</span>
         </span>
       </span>
     </button>
