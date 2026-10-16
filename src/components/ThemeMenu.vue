@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { setTheme, themeMode } from '../../../../Downloads/update-theme/update-theme/src/lib/theme.js'
-import { hapticTap } from '../../../../Downloads/update-theme/update-theme/src/lib/telegram.js'
+  import { setTheme, themeMode } from '../lib/theme.js'
+  import { hapticTap } from '../lib/telegram.js'
 
 const OPTIONS = [
   { value: 'auto', label: 'Як у Telegram' },
