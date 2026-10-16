@@ -1,0 +1,167 @@
+/*
+ * Кольори беруться з теми Telegram (змінні --tg-theme-*), тож застосунок
+ * виглядає як частина Telegram у світлій і темній темі.
+ * Значення після коми — запасні, для браузера (демо-режим).
+ */
+
+:root {
+  --fb-bg: #f0f1f5;
+  --fb-surface: #ffffff;
+  --fb-text: #15171c;
+  --fb-hint: #80868f;
+  --fb-accent: #2a7de1;
+  --fb-accent-text: #ffffff;
+  --fb-danger: #e0393e;
+  --fb-sep: rgba(60, 64, 72, 0.14);
+
+  --urgent: #e0393e;
+  --soon: #c77700;
+  --subject-l: 50%;
+  color-scheme: light;
+}
+
+:root[data-scheme='dark'] {
+  --fb-bg: #101418;
+  --fb-surface: #1b2127;
+  --fb-text: #f2f4f7;
+  --fb-hint: #8b939c;
+  --fb-accent: #4c9cf0;
+  --fb-accent-text: #ffffff;
+  --fb-danger: #ff6b6b;
+  --fb-sep: rgba(255, 255, 255, 0.09);
+
+  --urgent: #ff6b6b;
+  --soon: #f2a93b;
+  --subject-l: 63%;
+  /* темні нативні елементи (іконка календаря в полі дати тощо) */
+  color-scheme: dark;
+}
+
+:root {
+  --bg: var(--tg-theme-secondary-bg-color, var(--fb-bg));
+  --surface: var(--tg-theme-section-bg-color, var(--tg-theme-bg-color, var(--fb-surface)));
+  --text: var(--tg-theme-text-color, var(--fb-text));
+  --hint: var(--tg-theme-hint-color, var(--fb-hint));
+  --accent: var(--tg-theme-button-color, var(--fb-accent));
+  --accent-text: var(--tg-theme-button-text-color, var(--fb-accent-text));
+  --danger: var(--tg-theme-destructive-text-color, var(--fb-danger));
+  --sep: var(--tg-theme-section-separator-color, var(--fb-sep));
+  --fill: rgba(128, 128, 128, 0.14);
+
+  --radius-section: 14px;
+  --radius-control: 10px;
+  --safe-bottom: var(--tg-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body.sheet-open {
+  overflow: hidden;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Кольори за терміновістю */
+.tone-urgent { --tone: var(--urgent); }
+.tone-soon { --tone: var(--soon); }
+.tone-week { --tone: var(--accent); }
+.tone-later { --tone: var(--text); }
+
+/* Кольорова крапка предмета */
+.subject-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: hsl(var(--hue) 70% var(--subject-l));
+}
+
+/* Секції у стилі Telegram */
+.section-title {
+  margin: 22px 16px 7px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--hint);
+}
+
+.section {
+  background: var(--surface);
+  border-radius: var(--radius-section);
+  overflow: hidden;
+}
+
+.primary-button {
+  display: block;
+  width: 100%;
+  min-height: 50px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.primary-button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--fill);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.chip.active {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,52 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Кожен push у main автоматично оновлює сайт
+  push:
+    branches: [main]
+  # Кнопка "Run workflow" для ручного запуску
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Завантажити код
+        uses: actions/checkout@v5
+
+      - name: Встановити Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Встановити залежності
+        run: npm ci
+
+      - name: Зібрати сайт
+        run: npm run build
+
+      - name: Підготувати файли для Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Опублікувати на GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
