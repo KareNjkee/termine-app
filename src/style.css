@@ -47,6 +47,7 @@
   --danger: var(--tg-theme-destructive-text-color, var(--fb-danger));
   --sep: var(--tg-theme-section-separator-color, var(--fb-sep));
   --fill: rgba(128, 128, 128, 0.14);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
 
   --radius-section: 14px;
   --radius-control: 10px;
@@ -59,6 +60,22 @@
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Тему вибрано вручну (світла/темна): кольори Telegram ігноруємо, беремо власну палітру */
+:root[data-forced] {
+  --bg: var(--fb-bg);
+  --surface: var(--fb-surface);
+  --text: var(--fb-text);
+  --hint: var(--fb-hint);
+  --accent: var(--fb-accent);
+  --accent-text: var(--fb-accent-text);
+  --danger: var(--fb-danger);
+  --sep: var(--fb-sep);
+}
+
+:root[data-scheme='dark'] {
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
 * {

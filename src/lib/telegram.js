@@ -6,33 +6,15 @@ export const tg = window.Telegram?.WebApp ?? null
 // initData є тільки тоді, коли сторінку відкрито через бота в Telegram.
 export const inTelegram = Boolean(tg?.initData)
 
-function supports(version) {
+/** Чи підтримує поточна версія Telegram цю можливість */
+export function supports(version) {
   return Boolean(inTelegram && tg.isVersionAtLeast?.(version))
 }
 
-function applyColorScheme() {
-  const scheme = inTelegram
-    ? tg.colorScheme
-    : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  document.documentElement.dataset.scheme = scheme
-}
-
 export function initTelegram() {
-  applyColorScheme()
-
-  if (!inTelegram) {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyColorScheme)
-    return
-  }
-
+  if (!inTelegram) return
   tg.ready()
   tg.expand()
-  tg.onEvent('themeChanged', applyColorScheme)
-
-  if (supports('6.1')) {
-    tg.setHeaderColor('secondary_bg_color')
-    tg.setBackgroundColor('secondary_bg_color')
-  }
   // Щоб випадковий свайп униз під час прокрутки не закривав застосунок
   if (supports('7.7')) tg.disableVerticalSwipes()
 }

@@ -3,8 +3,9 @@ import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
 import ListView from './components/ListView.vue'
 import CalendarView from './components/CalendarView.vue'
 import DeadlineSheet from './components/DeadlineSheet.vue'
+import ThemeMenu from '../../../Downloads/update-theme/update-theme/src/components/ThemeMenu.vue'
 import { api, apiConfigured, demoMode } from './lib/api.js'
-import { confirmDialog, haptic, hapticTap, inTelegram } from './lib/telegram.js'
+import { confirmDialog, haptic, hapticTap, inTelegram } from '../../../Downloads/update-theme/update-theme/src/lib/telegram.js'
 import { assignSubjectColors, knownSubjects } from './lib/subjects.js'
 import { formatDayMonth, todayISO } from './lib/dates.js'
 
@@ -144,7 +145,10 @@ onBeforeUnmount(() => {
 
   <div v-else class="app">
     <header class="top">
-      <h1>Терміни</h1>
+      <div class="title-row">
+        <h1>Терміни</h1>
+        <ThemeMenu />
+      </div>
       <div class="segmented" role="tablist" aria-label="Вигляд">
         <button
           type="button"
@@ -226,11 +230,15 @@ onBeforeUnmount(() => {
 }
 
 .top {
+  padding: 16px 4px 8px;
+}
+
+.title-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 4px 8px;
+  margin-bottom: 12px;
 }
 
 .top h1,
@@ -249,20 +257,16 @@ onBeforeUnmount(() => {
 }
 
 .segmented button {
-  padding: 6px 14px;
+  flex: 1;
+  padding: 7px 14px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--hint);
 }
 
-@media (max-width: 360px) {
-  .top h1 {
-    font-size: 25px;
-  }
-  .segmented button {
-    padding: 6px 10px;
-  }
+:root[data-scheme='dark'] .segmented button.active {
+  background: rgba(255, 255, 255, 0.13);
 }
 
 .segmented button.active {
