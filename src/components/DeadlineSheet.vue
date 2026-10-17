@@ -104,9 +104,9 @@ onBeforeUnmount(() => {
       @submit.prevent="handleSubmit"
     >
       <header class="sheet-head">
-        <button type="button" class="link" @click="emit('close')">Скасувати</button>
+        <button type="button" class="link" @click="emit('close')">Закрити</button>
         <h2>{{ isEdit ? 'Редагувати термін' : 'Новий термін' }}</h2>
-        <span class="link placeholder" aria-hidden="true">Скасувати</span>
+        <span class="link placeholder" aria-hidden="true">Закрити</span>
       </header>
 
       <div class="section fields">
