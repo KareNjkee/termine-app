@@ -2,12 +2,10 @@
 import DeleteButton from './DeleteButton.vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { addDays, daysBetween, formatLong, formatTime, reminderText } from '../lib/dates.js'
-import { subjectHue } from '../lib/subjects.js'
 
 const props = defineProps({
   item: { type: Object, default: null }, // null = новий термін
   presetDate: { type: String, default: null },
-  subjects: { type: Array, default: () => [] },
   today: { type: String, required: true },
   save: { type: Function, required: true },
   remove: { type: Function, required: true },
@@ -24,18 +22,12 @@ const deleting = ref(false)
 const error = ref('')
 const titleInput = ref(null)
 
-const subjectChips = computed(() => props.subjects.slice(0, 8))
-
 const reminders = computed(() => {
   if (!dueDate.value) return ''
   if (daysBetween(props.today, dueDate.value) < 0) return 'Ця дата вже минула.'
   const when = reminderText(dueDate.value, props.today)
   return when ? `Бот нагадає ${when}.` : 'Нагадувань не буде: термін уже зовсім близько.'
 })
-
-function toggleSubject(name) {
-  subject.value = subject.value === name ? '' : name
-}
 
 async function handleSubmit() {
   error.value = ''
@@ -118,29 +110,14 @@ onBeforeUnmount(() => {
             ref="titleInput"
             v-model="title"
             maxlength="200"
-            placeholder="Напр., Präsentation"
             autocomplete="off"
             enterkeyhint="next"
           />
         </label>
         <label class="field">
           <span class="field-label">Детальніше</span>
-          <input v-model="subject" maxlength="100" placeholder="Необов’язково" autocomplete="off" />
+          <input v-model="subject" maxlength="100" autocomplete="off" />
         </label>
-      </div>
-
-      <div v-if="subjectChips.length" class="chips" aria-label="Предмети, що вже є">
-        <button
-          v-for="name in subjectChips"
-          :key="name"
-          type="button"
-          class="chip"
-          :class="{ active: subject === name }"
-          @click="toggleSubject(name)"
-        >
-          <span class="subject-dot" :style="{ '--hue': subjectHue(name) }" />
-          {{ name }}
-        </button>
       </div>
 
       <div class="section fields">
@@ -260,11 +237,6 @@ onBeforeUnmount(() => {
   font-size: 17px;
 }
 
-.field input::placeholder {
-  color: var(--hint);
-  opacity: 0.7;
-}
-
 .field:focus-within {
   box-shadow: inset 3px 0 0 var(--accent);
 }
@@ -301,20 +273,6 @@ onBeforeUnmount(() => {
   stroke: currentColor;
   stroke-width: 2.2;
   stroke-linecap: round;
-}
-
-.chips {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 0 2px 14px;
-  scrollbar-width: none;
-}
-
-.chips .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .hint {

@@ -8,7 +8,7 @@ import BirthdaySheet from './components/BirthdaySheet.vue'
 import ThemeMenu from './components/ThemeMenu.vue'
 import { api, apiConfigured, demoMode } from './lib/api.js'
 import { haptic, hapticTap, inTelegram } from './lib/telegram.js'
-import { assignSubjectColors, knownSubjects } from './lib/subjects.js'
+import { assignSubjectColors } from './lib/subjects.js'
 import { formatDayMonth, parseISO, todayISO } from './lib/dates.js'
 import { seasonOf } from './lib/season.js'
 import { setSeason } from './lib/theme.js'
@@ -36,7 +36,6 @@ watchEffect(() => {
   setSeason(seasonOf(month))
 })
 
-const subjects = computed(() => knownSubjects(deadlines.value))
 watchEffect(() => assignSubjectColors(deadlines.value))
 const addLabel = computed(() => {
   if (view.value === 'birthdays') return 'Додати день народження'
@@ -292,7 +291,6 @@ onBeforeUnmount(() => {
         v-if="sheet"
         :item="sheet.item"
         :preset-date="sheet.presetDate"
-        :subjects="subjects"
         :today="today"
         :save="saveDeadline"
         :remove="deleteDeadline"

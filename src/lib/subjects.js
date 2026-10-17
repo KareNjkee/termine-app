@@ -26,12 +26,3 @@ export function subjectHue(subject) {
   for (const char of key) hash = (hash * 31 + char.codePointAt(0)) >>> 0
   return HUES[hash % HUES.length]
 }
-
-/** Список предметів, що вже трапляються, від найчастішого. */
-export function knownSubjects(deadlines) {
-  const counts = new Map()
-  for (const item of deadlines) {
-    if (item.subject) counts.set(item.subject, (counts.get(item.subject) ?? 0) + 1)
-  }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([name]) => name)
-}

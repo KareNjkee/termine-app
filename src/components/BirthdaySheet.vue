@@ -136,7 +136,7 @@ onBeforeUnmount(() => {
       <div class="section fields">
         <label class="field">
           <span class="field-label">Ім’я</span>
-          <input ref="nameInput" v-model="name" maxlength="100" placeholder="Напр., Максим" autocomplete="off" />
+          <input ref="nameInput" v-model="name" maxlength="100" autocomplete="off" />
         </label>
       </div>
 
@@ -164,7 +164,6 @@ onBeforeUnmount(() => {
             v-model="birthYear"
             inputmode="numeric"
             maxlength="4"
-            :placeholder="`Напр., ${currentYear - 20}`"
             autocomplete="off"
           />
         </label>
@@ -279,11 +278,6 @@ onBeforeUnmount(() => {
   -webkit-appearance: none;
   appearance: none;
   cursor: pointer;
-}
-
-.field input::placeholder {
-  color: var(--hint);
-  opacity: 0.7;
 }
 
 .field:focus-within {
