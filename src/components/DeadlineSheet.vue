@@ -332,6 +332,7 @@ onBeforeUnmount(() => {
   color: var(--danger);
 }
 
+
 .delete:disabled {
   opacity: 0.5;
 }
