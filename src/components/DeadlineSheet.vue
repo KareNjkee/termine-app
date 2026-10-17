@@ -1,4 +1,5 @@
 <script setup>
+import DeleteButton from './DeleteButton.vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { addDays, daysBetween, formatLong, formatTime, reminderText } from '../lib/dates.js'
 import { subjectHue } from '../lib/subjects.js'
@@ -18,7 +19,8 @@ const title = ref(props.item?.title ?? '')
 const subject = ref(props.item?.subject ?? '')
 const dueDate = ref(props.item?.due_date ?? props.presetDate ?? addDays(props.today, 7))
 const dueTime = ref(formatTime(props.item?.due_time)) // '' = без часу
-const busy = ref(false)
+const saving = ref(false)
+const deleting = ref(false)
 const error = ref('')
 const titleInput = ref(null)
 
@@ -47,7 +49,7 @@ async function handleSubmit() {
     return
   }
 
-  busy.value = true
+  saving.value = true
   try {
     await props.save({
       title: title.value.trim(),
@@ -58,19 +60,19 @@ async function handleSubmit() {
   } catch (e) {
     error.value = e.message
   } finally {
-    busy.value = false
+    saving.value = false
   }
 }
 
 async function handleDelete() {
   error.value = ''
-  busy.value = true
+  deleting.value = true
   try {
     await props.remove()
   } catch (e) {
     error.value = e.message
   } finally {
-    busy.value = false
+    deleting.value = false
   }
 }
 
@@ -168,12 +170,16 @@ onBeforeUnmount(() => {
       </p>
       <p v-if="error" class="error" role="alert">{{ error }}</p>
 
-      <button class="primary-button" type="submit" :disabled="busy">
-        {{ busy ? 'Зберігаю…' : 'Зберегти' }}
+      <button class="primary-button" type="submit" :disabled="saving || deleting">
+        {{ saving ? 'Зберігаю…' : 'Зберегти' }}
       </button>
-      <button v-if="isEdit" type="button" class="delete" :disabled="busy" @click="handleDelete">
-        Видалити термін
-      </button>
+      <DeleteButton
+        v-if="isEdit"
+        label="Видалити термін"
+        :busy="deleting"
+        :disabled="saving"
+        @confirm="handleDelete"
+      />
     </form>
   </div>
 </template>
@@ -323,17 +329,4 @@ onBeforeUnmount(() => {
   color: var(--danger);
 }
 
-.delete {
-  display: block;
-  width: 100%;
-  min-height: 46px;
-  margin-top: 8px;
-  font-size: 16px;
-  color: var(--danger);
-}
-
-
-.delete:disabled {
-  opacity: 0.5;
-}
 </style>

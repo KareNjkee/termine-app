@@ -1,4 +1,5 @@
 <script setup>
+import DeleteButton from './DeleteButton.vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { MONTHS, formatShort, parseISO } from '../lib/dates.js'
 import { isLeapYear, maxDayInMonth, nextBirthday } from '../lib/birthdays.js'
@@ -18,7 +19,8 @@ const name = ref(props.item?.name ?? '')
 const month = ref(props.item?.month ?? null) // 1–12
 const day = ref(props.item?.day ?? null)
 const birthYear = ref(props.item?.birth_year ? String(props.item.birth_year) : '')
-const busy = ref(false)
+const saving = ref(false)
+const deleting = ref(false)
 const error = ref('')
 const nameInput = ref(null)
 
@@ -69,7 +71,7 @@ function validate() {
 async function handleSubmit() {
   error.value = validate()
   if (error.value) return
-  busy.value = true
+  saving.value = true
   try {
     await props.save({
       name: name.value.trim(),
@@ -80,19 +82,19 @@ async function handleSubmit() {
   } catch (e) {
     error.value = e.message
   } finally {
-    busy.value = false
+    saving.value = false
   }
 }
 
 async function handleDelete() {
   error.value = ''
-  busy.value = true
+  deleting.value = true
   try {
     await props.remove()
   } catch (e) {
     error.value = e.message
   } finally {
-    busy.value = false
+    deleting.value = false
   }
 }
 
@@ -173,12 +175,16 @@ onBeforeUnmount(() => {
       </p>
       <p v-if="error" class="error" role="alert">{{ error }}</p>
 
-      <button class="primary-button" type="submit" :disabled="busy">
-        {{ busy ? 'Зберігаю…' : 'Зберегти' }}
+      <button class="primary-button" type="submit" :disabled="saving || deleting">
+        {{ saving ? 'Зберігаю…' : 'Зберегти' }}
       </button>
-      <button v-if="isEdit" type="button" class="delete" :disabled="busy" @click="handleDelete">
-        Видалити день народження
-      </button>
+      <DeleteButton
+        v-if="isEdit"
+        label="Видалити день народження"
+        :busy="deleting"
+        :disabled="saving"
+        @confirm="handleDelete"
+      />
     </form>
   </div>
 </template>
@@ -296,16 +302,4 @@ onBeforeUnmount(() => {
   color: var(--danger);
 }
 
-.delete {
-  display: block;
-  width: 100%;
-  min-height: 46px;
-  margin-top: 8px;
-  font-size: 16px;
-  color: var(--danger);
-}
-
-.delete:disabled {
-  opacity: 0.5;
-}
 </style>

@@ -7,7 +7,7 @@ import BirthdaysView from './components/BirthdaysView.vue'
 import BirthdaySheet from './components/BirthdaySheet.vue'
 import ThemeMenu from './components/ThemeMenu.vue'
 import { api, apiConfigured, demoMode } from './lib/api.js'
-import { confirmDialog, haptic, hapticTap, inTelegram } from './lib/telegram.js'
+import { haptic, hapticTap, inTelegram } from './lib/telegram.js'
 import { assignSubjectColors, knownSubjects } from './lib/subjects.js'
 import { formatDayMonth, todayISO } from './lib/dates.js'
 
@@ -114,8 +114,6 @@ async function saveBirthday(fields) {
 async function deleteBirthday() {
   const current = birthdaySheet.value?.item
   if (!current) return
-  const confirmed = await confirmDialog(`Видалити день народження «${current.name}»?`)
-  if (!confirmed) return
   await api.birthdays.remove(current.id)
   birthdays.value = birthdays.value.filter((b) => b.id !== current.id)
   birthdaySheet.value = null
@@ -144,8 +142,6 @@ async function saveDeadline(fields) {
 async function deleteDeadline() {
   const current = sheet.value?.item
   if (!current) return
-  const confirmed = await confirmDialog(`Видалити «${current.title}»?`)
-  if (!confirmed) return
   await api.remove(current.id)
   deadlines.value = deadlines.value.filter((d) => d.id !== current.id)
   sheet.value = null
