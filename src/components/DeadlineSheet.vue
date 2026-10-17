@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
           />
         </label>
         <label class="field">
-          <span class="field-label">Детальніше</span>
+          <span class="field-label">Детальніше (необов’язково)</span>
           <input v-model="subject" maxlength="100" autocomplete="off" />
         </label>
       </div>
