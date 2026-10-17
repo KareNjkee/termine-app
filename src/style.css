@@ -53,7 +53,7 @@
   --radius-control: 10px;
   --safe-bottom: var(--tg-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
 
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  font-family: 'Geologica Variable', -apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, 'Segoe UI', 'Helvetica Neue', sans-serif;
   font-size: 16px;
   line-height: 1.35;
   color: var(--text);
@@ -78,6 +78,124 @@
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
+/*
+ * Пори року. Палітра залежить від місяця: у календарі — від показаного,
+ * в інших вкладках — від сьогоднішнього (data-season ставить lib/theme.js).
+ * --band — фон сезонної смуги, --band-label — підпис «Осінь 2026» на ній,
+ * --motif-1..3 — кольори листя, сніжинок, цвіту чи сонця.
+ */
+:root:not([data-scheme='dark'])[data-season='winter'] {
+  --fb-bg: #e9eff5;
+  --fb-text: #14212e;
+  --fb-hint: #55677a;
+  --fb-accent: #2e68a1;
+  --fill: #dce6f0;
+  --band: #d3e1ee;
+  --band-label: #24578a;
+  --motif-1: #7fa6cf;
+  --motif-2: #afc8e3;
+  --motif-3: #5f8dbe;
+}
+
+:root:not([data-scheme='dark'])[data-season='spring'] {
+  --fb-bg: #eef3e8;
+  --fb-text: #1a2915;
+  --fb-hint: #56664e;
+  --fb-accent: #3c7a30;
+  --fill: #e1ebd7;
+  --band: #ddebd0;
+  --band-label: #2f6526;
+  --motif-1: #e49ab0;
+  --motif-2: #f1c3d0;
+  --motif-3: #d27a96;
+}
+
+:root:not([data-scheme='dark'])[data-season='summer'] {
+  --fb-bg: #faf2e1;
+  --fb-text: #2a1c07;
+  --fb-hint: #75603e;
+  --fb-accent: #a85a0c;
+  --fill: #f2e6cb;
+  --band: #f5e0b4;
+  --band-label: #864507;
+  --motif-1: #e3a13a;
+  --motif-2: #f0c46a;
+  --motif-3: #d88a1e;
+}
+
+:root:not([data-scheme='dark'])[data-season='autumn'] {
+  --fb-bg: #f5ebe2;
+  --fb-text: #2a150b;
+  --fb-hint: #7a5a49;
+  --fb-accent: #a4441d;
+  --fill: #eeddcf;
+  --band: #ecd2bd;
+  --band-label: #8a3816;
+  --motif-1: #c4572a;
+  --motif-2: #e09a4f;
+  --motif-3: #9c3b1b;
+}
+
+:root[data-scheme='dark'][data-season='winter'] {
+  --fb-bg: #0e141b;
+  --fb-surface: #18212b;
+  --fb-text: #eef3f8;
+  --fb-hint: #8d9baa;
+  --fb-accent: #7fb0e6;
+  --fb-accent-text: #0e141b;
+  --fill: #1f2b38;
+  --band: #1a2836;
+  --band-label: #7fb0e6;
+  --motif-1: #7fa6cf;
+  --motif-2: #afc8e3;
+  --motif-3: #5f8dbe;
+}
+
+:root[data-scheme='dark'][data-season='spring'] {
+  --fb-bg: #0f150f;
+  --fb-surface: #182118;
+  --fb-text: #eef4ea;
+  --fb-hint: #91a08a;
+  --fb-accent: #86c873;
+  --fb-accent-text: #0f150f;
+  --fill: #213021;
+  --band: #1c2b1b;
+  --band-label: #86c873;
+  --motif-1: #e49ab0;
+  --motif-2: #f1c3d0;
+  --motif-3: #c9708c;
+}
+
+:root[data-scheme='dark'][data-season='summer'] {
+  --fb-bg: #16120a;
+  --fb-surface: #221c12;
+  --fb-text: #f7f0e2;
+  --fb-hint: #a9997b;
+  --fb-accent: #f0b04a;
+  --fb-accent-text: #16120a;
+  --fill: #2e2616;
+  --band: #30250f;
+  --band-label: #f0b04a;
+  --motif-1: #e3a13a;
+  --motif-2: #f0c46a;
+  --motif-3: #d88a1e;
+}
+
+:root[data-scheme='dark'][data-season='autumn'] {
+  --fb-bg: #17100c;
+  --fb-surface: #241913;
+  --fb-text: #f6ece5;
+  --fb-hint: #a99183;
+  --fb-accent: #ee8a52;
+  --fb-accent-text: #17100c;
+  --fill: #2f211a;
+  --band: #33211a;
+  --band-label: #ee8a52;
+  --motif-1: #d9683a;
+  --motif-2: #e8a35a;
+  --motif-3: #b5482a;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -87,6 +205,7 @@ body {
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 body.sheet-open {
@@ -154,6 +273,7 @@ button {
   color: var(--accent-text);
   font-weight: 600;
   font-size: 16px;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 .primary-button:disabled {

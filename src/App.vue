@@ -9,7 +9,9 @@ import ThemeMenu from './components/ThemeMenu.vue'
 import { api, apiConfigured, demoMode } from './lib/api.js'
 import { haptic, hapticTap, inTelegram } from './lib/telegram.js'
 import { assignSubjectColors, knownSubjects } from './lib/subjects.js'
-import { formatDayMonth, todayISO } from './lib/dates.js'
+import { formatDayMonth, parseISO, todayISO } from './lib/dates.js'
+import { seasonOf } from './lib/season.js'
+import { setSeason } from './lib/theme.js'
 
 const canUse = inTelegram || demoMode
 
@@ -25,6 +27,14 @@ const sheet = ref(null) // термін: null, або { item, presetDate }
 const birthdaySheet = ref(null) // день народження: null, або { item }
 const toast = ref('')
 let toastTimer = null
+
+// Пора року: у календарі — за показаним місяцем, в інших вкладках — за сьогоднішнім
+const calendarMonth = ref(null)
+watchEffect(() => {
+  const month =
+    view.value === 'calendar' && calendarMonth.value !== null ? calendarMonth.value : parseISO(today.value).month
+  setSeason(seasonOf(month))
+})
 
 const subjects = computed(() => knownSubjects(deadlines.value))
 watchEffect(() => assignSubjectColors(deadlines.value))
@@ -257,6 +267,7 @@ onBeforeUnmount(() => {
         @open="openEdit"
         @toggle="toggleDone"
         @open-birthday="openBirthday"
+        @month="calendarMonth = $event"
       />
 
       <BirthdaysView
@@ -388,6 +399,7 @@ onBeforeUnmount(() => {
   padding: 10px 12px calc(10px + var(--safe-bottom));
   background: var(--bg);
   border-top: 1px solid var(--sep);
+  transition: background-color 0.4s ease;
 }
 
 .bottom-bar .primary-button {

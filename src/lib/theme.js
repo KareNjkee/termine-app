@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { supports, tg, inTelegram } from './telegram.js'
+import { seasonOf } from './season.js'
 
 // Тема застосунку: 'light' або 'dark'.
 // Поки ти не вибрав тему кнопкою, береться поточна тема Telegram (у браузері — системи).
@@ -37,17 +38,30 @@ const outerScheme = ref(currentOuterScheme())
 
 export const themeMode = computed(() => savedMode.value ?? outerScheme.value)
 
+// Колір шапки й фону самого Telegram навколо застосунку — такий самий, як фон сторінки
+let lastOuterColor = ''
+function syncTelegramColors() {
+  if (!supports('6.1')) return
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--fb-bg').trim()
+  if (!bg || bg === lastOuterColor) return
+  lastOuterColor = bg
+  tg.setHeaderColor(bg)
+  tg.setBackgroundColor(bg)
+}
+
 export function applyTheme() {
   const root = document.documentElement
   root.dataset.scheme = themeMode.value
   root.dataset.forced = '' // завжди власна палітра зі style.css
+  syncTelegramColors()
+}
 
-  // Колір шапки й фону самого Telegram навколо застосунку
-  if (supports('6.1')) {
-    const bg = getComputedStyle(root).getPropertyValue('--fb-bg').trim()
-    tg.setHeaderColor(bg)
-    tg.setBackgroundColor(bg)
-  }
+// Пора року ('winter' | 'spring' | 'summer' | 'autumn') змінює палітру в style.css
+export function setSeason(season) {
+  const root = document.documentElement
+  if (root.dataset.season === season) return
+  root.dataset.season = season
+  syncTelegramColors()
 }
 
 export function setTheme(mode) {
@@ -63,6 +77,8 @@ export function toggleTheme() {
 }
 
 export function initTheme() {
+  // Пора року ставимо ще до першого кадру, щоб не блимала стандартна палітра
+  document.documentElement.dataset.season = seasonOf(new Date().getMonth())
   applyTheme()
 
   // Поки тему не вибрано, слідуємо за Telegram/системою

@@ -2,7 +2,8 @@
 import { computed, ref, watch } from 'vue'
 import DeadlineRow from './DeadlineRow.vue'
 import BirthdayRow from './BirthdayRow.vue'
-import { WEEK_HEADER, formatLong, monthTitle, parseISO, toISO } from '../lib/dates.js'
+import SeasonBand from './SeasonBand.vue'
+import { WEEK_HEADER, formatLong, parseISO, toISO } from '../lib/dates.js'
 import { subjectHue } from '../lib/subjects.js'
 import { birthdayInYear, birthdaysOn } from '../lib/birthdays.js'
 import { hapticTap } from '../lib/telegram.js'
@@ -12,7 +13,7 @@ const props = defineProps({
   birthdays: { type: Array, default: () => [] },
   today: { type: String, required: true },
 })
-const emit = defineEmits(['open', 'toggle', 'open-birthday'])
+const emit = defineEmits(['open', 'toggle', 'open-birthday', 'month'])
 
 // Обраний день живе в App.vue, щоб кнопка «Додати» знала дату
 const selected = defineModel('selected', { type: String, required: true })
@@ -24,6 +25,9 @@ watch(selected, (iso) => {
   const { year, month } = parseISO(iso)
   cursor.value = { year, month }
 })
+
+// App.vue фарбує застосунок у пору року показаного місяця
+watch(() => cursor.value.month, (month) => emit('month', month), { immediate: true })
 
 const byDate = computed(() => {
   const map = new Map()
@@ -104,51 +108,50 @@ function dayLabel(cell) {
 
 <template>
   <div>
-    <div class="section calendar" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd">
-      <div class="month-bar">
-        <button class="nav" type="button" aria-label="Попередній місяць" @click="shiftMonth(-1)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
-        </button>
-        <h2 class="month">{{ monthTitle(cursor.year, cursor.month) }}</h2>
-        <button class="nav" type="button" aria-label="Наступний місяць" @click="shiftMonth(1)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
-        </button>
-      </div>
+    <div class="month-area" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd">
+      <SeasonBand
+        :year="cursor.year"
+        :month="cursor.month"
+        @prev="shiftMonth(-1)"
+        @next="shiftMonth(1)"
+      />
 
-      <div class="grid weekdays" aria-hidden="true">
-        <span v-for="name in WEEK_HEADER" :key="name">{{ name }}</span>
-      </div>
+      <div class="section calendar">
+        <div class="grid weekdays" aria-hidden="true">
+          <span v-for="name in WEEK_HEADER" :key="name">{{ name }}</span>
+        </div>
 
-      <div class="grid days">
-        <template v-for="cell in cells" :key="cell.key">
-          <span v-if="cell.blank" />
-          <button
-            v-else
-            type="button"
-            class="day"
-            :class="{
-              selected: cell.iso === selected,
-              today: cell.iso === today,
-              past: cell.iso < today,
-            }"
-            :aria-label="dayLabel(cell)"
-            :aria-pressed="cell.iso === selected"
-            @click="select(cell.iso)"
-          >
-            <span class="num tabular">
-              {{ cell.day }}
-              <span v-if="cell.birthdays" class="cake" aria-hidden="true">🎂</span>
-            </span>
-            <span class="dots">
-              <span
-                v-for="(hue, i) in cell.dots"
-                :key="i"
-                class="dot"
-                :style="hue === null ? null : { '--hue': hue }"
-              />
-            </span>
-          </button>
-        </template>
+        <div class="grid days">
+          <template v-for="cell in cells" :key="cell.key">
+            <span v-if="cell.blank" />
+            <button
+              v-else
+              type="button"
+              class="day"
+              :class="{
+                selected: cell.iso === selected,
+                today: cell.iso === today,
+                past: cell.iso < today,
+              }"
+              :aria-label="dayLabel(cell)"
+              :aria-pressed="cell.iso === selected"
+              @click="select(cell.iso)"
+            >
+              <span class="num tabular">
+                {{ cell.day }}
+                <span v-if="cell.birthdays" class="cake" aria-hidden="true">🎂</span>
+              </span>
+              <span class="dots">
+                <span
+                  v-for="(hue, i) in cell.dots"
+                  :key="i"
+                  class="dot"
+                  :style="hue === null ? null : { '--hue': hue }"
+                />
+              </span>
+            </button>
+          </template>
+        </div>
       </div>
     </div>
 
@@ -184,42 +187,15 @@ function dayLabel(cell) {
 </template>
 
 <style scoped>
-.calendar {
+.month-area {
   margin-top: 6px;
-  padding: 8px 8px 10px;
   user-select: none;
 }
 
-.month-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 2px 0 8px;
-}
-
-.month {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.nav {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--accent);
-}
-
-.nav svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.calendar {
+  margin-top: 12px;
+  padding: 12px 8px 8px;
+  border-radius: 22px;
 }
 
 .grid {
@@ -271,11 +247,13 @@ function dayLabel(cell) {
 }
 
 .day.today .num {
+  box-shadow: inset 0 0 0 2px var(--accent);
   color: var(--accent);
   font-weight: 700;
 }
 
 .day.selected .num {
+  box-shadow: none;
   background: var(--accent);
   color: var(--accent-text);
   font-weight: 600;
