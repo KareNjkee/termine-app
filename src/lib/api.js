@@ -8,8 +8,12 @@ export const demoMode = !inTelegram && new URLSearchParams(location.search).has(
 
 export const apiConfigured = !API_URL.includes('YOUR-PROJECT')
 
-async function request(method, { id, body } = {}) {
-  const url = id ? `${API_URL}?id=${encodeURIComponent(id)}` : API_URL
+async function request(method, { id, body, resource } = {}) {
+  const params = new URLSearchParams()
+  if (resource) params.set('resource', resource)
+  if (id) params.set('id', id)
+  const query = params.toString()
+  const url = query ? `${API_URL}?${query}` : API_URL
   let response
   try {
     response = await fetch(url, {
@@ -35,6 +39,14 @@ const remoteApi = {
   create: (fields) => request('POST', { body: fields }),
   update: (id, fields) => request('PATCH', { id, body: fields }),
   remove: (id) => request('DELETE', { id }),
+
+  // Дні народження: ті самі запити з ?resource=birthdays
+  birthdays: {
+    list: () => request('GET', { resource: 'birthdays' }),
+    create: (fields) => request('POST', { resource: 'birthdays', body: fields }),
+    update: (id, fields) => request('PATCH', { resource: 'birthdays', id, body: fields }),
+    remove: (id) => request('DELETE', { resource: 'birthdays', id }),
+  },
 }
 
 export const api = demoMode ? createDemoApi() : remoteApi

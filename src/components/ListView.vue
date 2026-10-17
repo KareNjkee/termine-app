@@ -1,14 +1,22 @@
 <script setup>
 import { computed, ref } from 'vue'
 import DeadlineRow from './DeadlineRow.vue'
+import BirthdayRow from './BirthdayRow.vue'
 import { countdown, daysBetween, formatLong, formatTime } from '../lib/dates.js'
 import { subjectHue } from '../lib/subjects.js'
+import { daysUntilBirthday, sortByNext } from '../lib/birthdays.js'
 
 const props = defineProps({
   deadlines: { type: Array, required: true }, // уже відсортовані за датою
+  birthdays: { type: Array, default: () => [] },
   today: { type: String, required: true },
 })
-const emit = defineEmits(['open', 'toggle'])
+const emit = defineEmits(['open', 'toggle', 'open-birthday'])
+
+// Дні народження на найближчі 7 днів (як і «Цього тижня»)
+const weekBirthdays = computed(() =>
+  sortByNext(props.birthdays, props.today).filter((p) => daysUntilBirthday(p, props.today) <= 7),
+)
 
 const showDone = ref(false)
 
@@ -34,6 +42,7 @@ const groups = computed(() =>
   [
     { key: 'overdue', title: 'Прострочено', items: overdue.value },
     { key: 'week', title: 'Цього тижня', items: thisWeek.value },
+    { key: 'birthdays', title: 'Дні народження цього тижня', items: weekBirthdays.value },
     { key: 'later', title: 'Пізніше', items: later.value },
   ].filter((group) => group.items.length > 0),
 )
@@ -77,7 +86,16 @@ const groups = computed(() =>
 
     <section v-for="group in groups" :key="group.key">
       <h2 class="section-title" :class="{ danger: group.key === 'overdue' }">{{ group.title }}</h2>
-      <div class="section">
+      <div v-if="group.key === 'birthdays'" class="section">
+        <BirthdayRow
+          v-for="person in group.items"
+          :key="person.id"
+          :person="person"
+          :today="today"
+          @open="emit('open-birthday', $event)"
+        />
+      </div>
+      <div v-else class="section">
         <DeadlineRow
           v-for="item in group.items"
           :key="item.id"

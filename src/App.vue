@@ -3,6 +3,8 @@ import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
 import ListView from './components/ListView.vue'
 import CalendarView from './components/CalendarView.vue'
 import DeadlineSheet from './components/DeadlineSheet.vue'
+import BirthdaysView from './components/BirthdaysView.vue'
+import BirthdaySheet from './components/BirthdaySheet.vue'
 import ThemeMenu from './components/ThemeMenu.vue'
 import { api, apiConfigured, demoMode } from './lib/api.js'
 import { confirmDialog, haptic, hapticTap, inTelegram } from './lib/telegram.js'
@@ -12,20 +14,25 @@ import { formatDayMonth, todayISO } from './lib/dates.js'
 const canUse = inTelegram || demoMode
 
 const deadlines = ref([])
+const birthdays = ref([])
 const loading = ref(true)
 const loadError = ref('')
-const view = ref('list') // 'list' | 'calendar'
+const birthdaysError = ref('')
+const view = ref('list') // 'list' | 'calendar' | 'birthdays'
 const today = ref(todayISO())
 const selectedDate = ref(todayISO())
-const sheet = ref(null) // null, або { item, presetDate }
+const sheet = ref(null) // термін: null, або { item, presetDate }
+const birthdaySheet = ref(null) // день народження: null, або { item }
 const toast = ref('')
 let toastTimer = null
 
 const subjects = computed(() => knownSubjects(deadlines.value))
 watchEffect(() => assignSubjectColors(deadlines.value))
-const addLabel = computed(() =>
-  view.value === 'calendar' ? `Додати на ${formatDayMonth(selectedDate.value)}` : 'Додати термін',
-)
+const addLabel = computed(() => {
+  if (view.value === 'birthdays') return 'Додати день народження'
+  if (view.value === 'calendar') return `Додати на ${formatDayMonth(selectedDate.value)}`
+  return 'Додати термін'
+})
 
 // Терміни без часу — у кінці свого дня
 const timeKey = (time) => time ?? '99:99'
@@ -53,9 +60,18 @@ async function load() {
   }
   loading.value = true
   loadError.value = ''
+  birthdaysError.value = ''
+
+  // Дні народження вантажимо окремо: якщо з ними щось не так, терміни однаково покажуться
+  const birthdaysRequest = api.birthdays.list().catch((error) => {
+    birthdaysError.value = `Не вдалося завантажити дні народження: ${error.message}`
+    return []
+  })
+
   try {
     deadlines.value = await api.list()
     sortDeadlines()
+    birthdays.value = await birthdaysRequest
   } catch (error) {
     loadError.value = error.message
   } finally {
@@ -71,7 +87,40 @@ function setView(next) {
 
 function openCreate() {
   hapticTap()
+  if (view.value === 'birthdays') {
+    birthdaySheet.value = { item: null }
+    return
+  }
   sheet.value = { item: null, presetDate: view.value === 'calendar' ? selectedDate.value : null }
+}
+
+function openBirthday(person) {
+  hapticTap()
+  birthdaySheet.value = { item: person }
+}
+
+async function saveBirthday(fields) {
+  const current = birthdaySheet.value?.item
+  if (current) {
+    Object.assign(current, await api.birthdays.update(current.id, fields))
+  } else {
+    birthdays.value.push(await api.birthdays.create(fields))
+  }
+  birthdaySheet.value = null
+  haptic('success')
+  showToast('Збережено')
+}
+
+async function deleteBirthday() {
+  const current = birthdaySheet.value?.item
+  if (!current) return
+  const confirmed = await confirmDialog(`Видалити день народження «${current.name}»?`)
+  if (!confirmed) return
+  await api.birthdays.remove(current.id)
+  birthdays.value = birthdays.value.filter((b) => b.id !== current.id)
+  birthdaySheet.value = null
+  haptic('success')
+  showToast('Видалено')
 }
 
 function openEdit(item) {
@@ -168,6 +217,18 @@ onBeforeUnmount(() => {
         >
           Календар
         </button>
+        <button
+          type="button"
+          role="tab"
+          class="icon-tab"
+          aria-label="Дні народження"
+          title="Дні народження"
+          :aria-selected="view === 'birthdays'"
+          :class="{ active: view === 'birthdays' }"
+          @click="setView('birthdays')"
+        >
+          🎂
+        </button>
       </div>
     </header>
 
@@ -184,18 +245,30 @@ onBeforeUnmount(() => {
       <ListView
         v-else-if="view === 'list'"
         :deadlines="deadlines"
+        :birthdays="birthdays"
         :today="today"
         @open="openEdit"
         @toggle="toggleDone"
+        @open-birthday="openBirthday"
       />
 
       <CalendarView
-        v-else
+        v-else-if="view === 'calendar'"
         v-model:selected="selectedDate"
         :deadlines="deadlines"
+        :birthdays="birthdays"
         :today="today"
         @open="openEdit"
         @toggle="toggleDone"
+        @open-birthday="openBirthday"
+      />
+
+      <BirthdaysView
+        v-else
+        :birthdays="birthdays"
+        :today="today"
+        :error="birthdaysError"
+        @open="openBirthday"
       />
     </main>
 
@@ -217,6 +290,17 @@ onBeforeUnmount(() => {
         :save="saveDeadline"
         :remove="deleteDeadline"
         @close="sheet = null"
+      />
+    </Transition>
+
+    <Transition name="sheet">
+      <BirthdaySheet
+        v-if="birthdaySheet"
+        :item="birthdaySheet.item"
+        :today="today"
+        :save="saveBirthday"
+        :remove="deleteBirthday"
+        @close="birthdaySheet = null"
       />
     </Transition>
   </div>
@@ -254,6 +338,12 @@ onBeforeUnmount(() => {
   padding: 2px;
   border-radius: var(--radius-control);
   background: var(--fill);
+}
+
+.segmented .icon-tab {
+  flex: 0 0 56px;
+  padding: 4px 0;
+  font-size: 17px;
 }
 
 .segmented button {

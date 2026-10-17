@@ -1,15 +1,18 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import DeadlineRow from './DeadlineRow.vue'
+import BirthdayRow from './BirthdayRow.vue'
 import { WEEK_HEADER, formatLong, monthTitle, parseISO, toISO } from '../lib/dates.js'
 import { subjectHue } from '../lib/subjects.js'
+import { birthdayInYear, birthdaysOn } from '../lib/birthdays.js'
 import { hapticTap } from '../lib/telegram.js'
 
 const props = defineProps({
   deadlines: { type: Array, required: true },
+  birthdays: { type: Array, default: () => [] },
   today: { type: String, required: true },
 })
-const emit = defineEmits(['open', 'toggle'])
+const emit = defineEmits(['open', 'toggle', 'open-birthday'])
 
 // Обраний день живе в App.vue, щоб кнопка «Додати» знала дату
 const selected = defineModel('selected', { type: String, required: true })
@@ -31,6 +34,18 @@ const byDate = computed(() => {
   return map
 })
 
+// Дні народження в показаному місяці: дата → кількість (щороку на той самий день)
+const birthdayCount = computed(() => {
+  const { year, month } = cursor.value
+  const map = new Map()
+  for (const person of props.birthdays) {
+    if (person.month !== month + 1) continue
+    const iso = birthdayInYear(year, person.month, person.day)
+    map.set(iso, (map.get(iso) ?? 0) + 1)
+  }
+  return map
+})
+
 const cells = computed(() => {
   const { year, month } = cursor.value
   const leadingBlanks = (new Date(year, month, 1).getDay() + 6) % 7 // тиждень з понеділка
@@ -45,6 +60,7 @@ const cells = computed(() => {
       iso,
       day,
       count: openItems.length,
+      birthdays: birthdayCount.value.get(iso) ?? 0,
       dots: openItems.slice(0, 3).map((item) => subjectHue(item.subject)),
     })
   }
@@ -52,6 +68,7 @@ const cells = computed(() => {
 })
 
 const selectedItems = computed(() => byDate.value.get(selected.value) ?? [])
+const selectedBirthdays = computed(() => birthdaysOn(props.birthdays, selected.value))
 const showTodayButton = computed(() => selected.value !== props.today)
 
 function shiftMonth(delta) {
@@ -78,7 +95,10 @@ function onTouchEnd(event) {
 }
 
 function dayLabel(cell) {
-  return cell.count ? `${formatLong(cell.iso)}, термінів: ${cell.count}` : formatLong(cell.iso)
+  const parts = [formatLong(cell.iso)]
+  if (cell.count) parts.push(`термінів: ${cell.count}`)
+  if (cell.birthdays) parts.push(`днів народження: ${cell.birthdays}`)
+  return parts.join(', ')
 }
 </script>
 
@@ -115,7 +135,10 @@ function dayLabel(cell) {
             :aria-pressed="cell.iso === selected"
             @click="select(cell.iso)"
           >
-            <span class="num tabular">{{ cell.day }}</span>
+            <span class="num tabular">
+              {{ cell.day }}
+              <span v-if="cell.birthdays" class="cake" aria-hidden="true">🎂</span>
+            </span>
             <span class="dots">
               <span
                 v-for="(hue, i) in cell.dots"
@@ -134,6 +157,17 @@ function dayLabel(cell) {
       <button v-if="showTodayButton" class="chip" type="button" @click="select(today)">Сьогодні</button>
     </div>
 
+    <div v-if="selectedBirthdays.length" class="section day-birthdays">
+      <BirthdayRow
+        v-for="person in selectedBirthdays"
+        :key="person.id"
+        :person="person"
+        :today="today"
+        :show-date="false"
+        @open="emit('open-birthday', $event)"
+      />
+    </div>
+
     <div v-if="selectedItems.length" class="section">
       <DeadlineRow
         v-for="item in selectedItems"
@@ -145,7 +179,7 @@ function dayLabel(cell) {
         @toggle="emit('toggle', $event)"
       />
     </div>
-    <p v-else class="nothing">На цей день нічого немає.</p>
+    <p v-else-if="!selectedBirthdays.length" class="nothing">На цей день нічого немає.</p>
   </div>
 </template>
 
@@ -209,12 +243,27 @@ function dayLabel(cell) {
 }
 
 .num {
+  position: relative;
   width: 36px;
   height: 36px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   font-size: 16px;
+}
+
+/* 🎂 у правому верхньому куті дня */
+.cake {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  font-size: 13px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.day-birthdays {
+  margin-bottom: 10px;
 }
 
 .day.past .num {
