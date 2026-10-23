@@ -6,6 +6,7 @@ import DeadlineSheet from './components/DeadlineSheet.vue'
 import BirthdaysView from './components/BirthdaysView.vue'
 import BirthdaySheet from './components/BirthdaySheet.vue'
 import ThemeMenu from './components/ThemeMenu.vue'
+import HomeScreenButton from './components/HomeScreenButton.vue'
 import { api, apiConfigured, demoMode } from './lib/api.js'
 import { haptic, hapticTap, inTelegram } from './lib/telegram.js'
 import { assignSubjectColors } from './lib/subjects.js'
@@ -201,7 +202,10 @@ onBeforeUnmount(() => {
     <header class="top">
       <div class="title-row">
         <h1>Терміни</h1>
-        <ThemeMenu />
+        <div class="title-actions">
+          <HomeScreenButton />
+          <ThemeMenu />
+        </div>
       </div>
       <div class="segmented" role="tablist" aria-label="Вигляд">
         <button
@@ -328,6 +332,11 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+}
+
+.title-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .top h1,
